@@ -26,20 +26,24 @@ if (isset($_POST['register']) && isset($_POST['password']) && isset($_POST['pass
     $password = $_POST['password'];
     $password_repeat = $_POST['password_repeat'];
 
-    // Überprüft, ob die eingegebenen Passwörter übereinstimmen
-    if ($password === $password_repeat) {
-        // Verschlüsselt das Passwort mit MD5 (nicht sicher, nur für Demonstrationszwecke)
-        $password_md5 = md5($password);
-
-        // Fügt den neuen Benutzer zur Datenbank hinzu
+   // Überprüft die Passwortkriterien
+   if (!preg_match('/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/', $password)) {
+    $message = "Passwort muss mindestens 8 Zeichen lang sein und Großbuchstaben, Kleinbuchstaben und Zahlen enthalten.";
+} elseif ($password !== $password_repeat) {
+    $message = "Die Passwörter stimmen nicht überein.";
+} else {
+    // Prüft, ob der Benutzername bereits existiert
+    $checkUser = $conn->query("SELECT * FROM user WHERE username='$username'");
+    if ($checkUser->num_rows > 0) {
+        $message = "Benutzername ist bereits vergeben.";
+    } else {
+        // Fügt den neuen Benutzer zur Datenbank hinzu, wenn die Überprüfungen erfolgreich waren
+        $password_md5 = md5($password); // Verschlüsselt das Passwort mit MD5
         $sql = "INSERT INTO user (username, password) VALUES ('$username', '$password_md5')";
         if ($conn->query($sql) === TRUE) {
             $message = "Neuer Benutzer erfolgreich registriert!";
         } else {
-            $message = "Fehler: " . $sql . "<br>" . $conn->error;
-        }
-    } else {
-        $message = "Die Passwörter stimmen nicht überein.";
+            $message = "Fehler bei der Registrierung: " . $conn->error;
     }
 }
 
@@ -103,3 +107,4 @@ if (isset($_POST['login'])) {
 </div>
 </body>
 </html>
+```

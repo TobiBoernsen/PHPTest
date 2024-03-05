@@ -1,32 +1,57 @@
 <?php
+// Startet eine neue oder eine bestehende Session
 session_start();
+
+// Definiert die Verbindungsinformationen zur Datenbank
 $host = "localhost";
 $user = "root";
 $password = "";
 $dbname = "testDB";
+
+// Stellt eine Verbindung zur Datenbank her
 $conn = new mysqli($host, $user, $password, $dbname);
+
+// Überprüft, ob die Datenbankverbindung erfolgreich war
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
 }
 
+// Initialisiert eine Variable für Nachrichten an den Benutzer
 $message = '';
 
-if (isset($_POST['register'])) {
+// Verarbeitet die Registrierung
+if (isset($_POST['register']) && isset($_POST['password']) && isset($_POST['password_repeat'])) {
+    // Speichert Benutzername und Passwörter aus dem Formular
     $username = $_POST['username'];
-    $password = md5($_POST['password']);
-    $sql = "INSERT INTO user (username, password) VALUES ('$username', '$password')";
-    if ($conn->query($sql) === TRUE) {
-        $message = "Neuer Benutzer erfolgreich registriert!";
+    $password = $_POST['password'];
+    $password_repeat = $_POST['password_repeat'];
+
+    // Überprüft, ob die eingegebenen Passwörter übereinstimmen
+    if ($password === $password_repeat) {
+        // Verschlüsselt das Passwort mit MD5 (nicht sicher, nur für Demonstrationszwecke)
+        $password_md5 = md5($password);
+
+        // Fügt den neuen Benutzer zur Datenbank hinzu
+        $sql = "INSERT INTO user (username, password) VALUES ('$username', '$password_md5')";
+        if ($conn->query($sql) === TRUE) {
+            $message = "Neuer Benutzer erfolgreich registriert!";
+        } else {
+            $message = "Fehler: " . $sql . "<br>" . $conn->error;
+        }
     } else {
-        $message = "Fehler: " . $sql . "<br>" . $conn->error;
+        $message = "Die Passwörter stimmen nicht überein.";
     }
 }
 
+// Verarbeitet den Login
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = md5($_POST['password']);
+
+    // Überprüft, ob der Benutzer in der Datenbank existiert
     $sql = "SELECT * FROM user WHERE username='$username' AND password='$password'";
     $result = $conn->query($sql);
+
     if ($result->num_rows > 0) {
         $_SESSION['username'] = $username;
         $message = "Erfolgreich eingeloggt!";
@@ -42,6 +67,7 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <title>Login und Registrierung</title>
     <style>
+        /* Einfache Styling-Anweisungen für die Benutzeroberfläche */
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
         .container { width: 300px; padding: 20px; background-color: white; margin: 50px auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         form { margin-bottom: 20px; }
@@ -54,23 +80,26 @@ if (isset($_POST['login'])) {
 
 <div class="container">
     <?php if (isset($_GET['action']) && $_GET['action'] == 'register'): ?>
+        <!-- Registrierungsformular -->
         <form method="post">
             <input type="text" name="username" placeholder="Benutzername" required>
             <input type="password" name="password" placeholder="Passwort" required>
+            <input type="password" name="password_repeat" placeholder="Passwort wiederholen" required>
             <button type="submit" name="register">Registrieren</button>
         </form>
         <p class="message"><?php echo $message; ?></p>
-        <p class="toggle">Sind Sie schon registriert? <a href="index.php">Hier zum Login.</a></p>
-    <?php else: ?>
-        <form method="post">
-            <input type="text" name="username" placeholder="Benutzername" required>
-            <input type="password" name="password" placeholder="Passwort" required>
-            <button type="submit" name="login">Login</button>
-        </form>
-        <p class="message"><?php echo $message; ?></p>
-        <p class="toggle">Sind Sie nicht registriert? <a href="index.php?action=register">Hier zum Registrieren.</a></p>
-    <?php endif; ?>
-</div>
+        <p class="toggle">Sind Sie schon registiert? <a href="index.php">Hier zum Login.</a></p>
+<?php else: ?>
+<!-- Login-Formular -->
+<form method="post">
+<input type="text" name="username" placeholder="Benutzername" required>
+<input type="password" name="password" placeholder="Passwort" required>
+<button type="submit" name="login">Login</button>
+</form>
+<p class="message"><?php echo $message; ?></p>
+<p class="toggle">Sind Sie nicht registriert? <a href="index.php?action=register">Hier zum Registrieren.</a></p>
+<?php endif; ?>
 
+</div>
 </body>
 </html>

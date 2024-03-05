@@ -32,6 +32,7 @@ if (isset($_POST['register']) && isset($_POST['password']) && isset($_POST['pass
 } elseif ($password !== $password_repeat) {
     $message = "Die Passwörter stimmen nicht überein.";
 } else {
+
     // Prüft, ob der Benutzername bereits existiert
     $checkUser = $conn->query("SELECT * FROM user WHERE username='$username'");
     if ($checkUser->num_rows > 0) {
@@ -44,6 +45,7 @@ if (isset($_POST['register']) && isset($_POST['password']) && isset($_POST['pass
             $message = "Neuer Benutzer erfolgreich registriert!";
         } else {
             $message = "Fehler bei der Registrierung: " . $conn->error;
+        }
     }
 }
 

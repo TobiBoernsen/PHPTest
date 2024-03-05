@@ -46,6 +46,7 @@ if (isset($_POST['register']) && isset($_POST['password']) && isset($_POST['pass
         } else {
             $message = "Fehler bei der Registrierung: " . $conn->error;
         }
+        }
     }
 }
 
@@ -109,4 +110,3 @@ if (isset($_POST['login'])) {
 </div>
 </body>
 </html>
-```
